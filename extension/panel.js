@@ -13,17 +13,19 @@ import {Archivos} from './archivos.js';
 import {deArchivos, MAX_ARCHIVOS, ponerCarpetaIconos, resultados} from './fuentes.js';
 import {escucharTeclas, Lista} from './lista.js';
 import {Modos} from './modos.js';
+import {Monedas} from './monedas.js';
 import {Respuesta} from './respuesta.js';
 
 const ANCHO = 680;
 const ESPERA_BUSQUEDA = 60; // ms entre teclas antes de buscar
-const PISTA = 'Buscar apps y archivos · 2+2 · > comando · ? pregunta';
+const PISTA = 'Apps y archivos · 2+2 · 5 km a mi · volumen 50 · > comando · ? pregunta';
 
 export class Panel {
     constructor(ext) {
         this._settings = ext.getSettings();
         ponerCarpetaIconos(`${ext.path}/iconos`);
         this._archivos = new Archivos();
+        this._monedas = new Monedas();
         this._grab = null;
         this._espera = 0;
         this._cancelable = null;
@@ -128,17 +130,28 @@ export class Panel {
     async _buscar() {
         this._cancelar();
         const texto = this._entrada.text;
-        const {antes, despues} = resultados(texto, this._modos.nombreIA);
+        let {antes, despues, pendiente} = resultados(texto, this._modos.nombreIA, this._monedas);
         this._lista.pintar([...antes, ...despues]);
 
         const t = texto.trim();
         if (antes.length + despues.length === 0 || /^[>?]/.test(t))
             return;
         const cancelable = this._cancelable = new Gio.Cancellable();
-        const encontrados = await this._archivos.buscar(t, MAX_ARCHIVOS, cancelable);
-        if (cancelable.is_cancelled() || encontrados.length === 0)
+        const [encontrados] = await Promise.all([this._archivos.buscar(t, MAX_ARCHIVOS, cancelable),
+            pendiente ? this._monedas.cargar() : null]);
+        if (cancelable.is_cancelled())
             return;
-        this._lista.pintar([...antes, ...deArchivos(encontrados), ...despues], this._lista.elegido);
+        // Si llegó el tipo de cambio, la conversión sale arriba y queda elegida.
+        let mantener = this._lista.elegido;
+        if (pendiente) {
+            const previos = antes.length;
+            antes = resultados(texto, this._modos.nombreIA, this._monedas).antes;
+            if (antes.length > previos)
+                mantener = antes[0];
+        } else if (encontrados.length === 0) {
+            return;
+        }
+        this._lista.pintar([...antes, ...deArchivos(encontrados), ...despues], mantener);
     }
 
 
@@ -199,6 +212,7 @@ export class Panel {
         this.cerrar();
         this._modos.destruir();
         this._respuesta.destruir();
+        this._monedas.destruir();
         this._fondo.destroy();
     }
 }

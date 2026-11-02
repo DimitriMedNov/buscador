@@ -1,7 +1,7 @@
 {
   "uuid": "buscador@dimitrimednov.github.io",
   "name": "Buscador",
-  "description": "Un buscador al centro de la pantalla, al estilo de Spotlight de macOS. Con Super+Espacio abres apps, archivos y acciones del sistema, haces cuentas, corres comandos y le preguntas a Claude (con tu suscripción e internet) o a un modelo local de Ollama.",
+  "description": "Un buscador al centro de la pantalla, al estilo de Spotlight de macOS. Con Super+Espacio abres apps, archivos y acciones del sistema, haces cuentas y conversiones (unidades y monedas), controlas volumen, brillo, wifi y modo oscuro, corres comandos y le preguntas a Claude (con tu suscripción e internet) o a un modelo local de Ollama.",
   "shell-version": ["48", "49", "50", "51"],
   "url": "https://github.com/DimitriMedNov/buscador",
   "settings-schema": "org.gnome.shell.extensions.buscador",

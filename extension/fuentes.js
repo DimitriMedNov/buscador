@@ -1,5 +1,5 @@
-// Arma la lista de resultados para un texto: cuenta, apps, acciones del sistema, archivos,
-// preguntar a la IA y buscar en la web. Cada resultado sabe cómo abrirse.
+// Arma la lista de resultados para un texto: cuenta, conversión, órdenes (volumen, wifi…), apps,
+// acciones del sistema, archivos, preguntar a la IA y buscar en la web. Cada resultado sabe cómo abrirse.
 
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
@@ -8,8 +8,11 @@ import St from 'gi://St';
 
 import * as SystemActions from 'resource:///org/gnome/shell/misc/systemActions.js';
 
-import {calcular} from './calculo.js';
+import {calcular, formatear} from './calculo.js';
 import {iconoDeArchivo} from './archivos.js';
+import {convertirUnidades, leerMoneda} from './conversion.js';
+import {leerOrdenes} from './ordenes.js';
+import {hacer} from './sistema.js';
 
 const MAX_APPS = 6;
 export const MAX_ARCHIVOS = 5;
@@ -67,6 +70,39 @@ function acciones(texto) {
     }));
 }
 
+function ordenes(texto) {
+    return leerOrdenes(texto).map(({titulo, icono, orden}) => ({
+        tipo: 'Sistema', titulo, subtitulo: 'Enter: hacerlo', icono, abrir: () => hacer(orden),
+    }));
+}
+
+const buscarEnWeb = t => () => lanzarUri(`https://www.google.com/search?q=${encodeURIComponent(t)}`);
+
+// Unidades al instante; monedas si ya hay tipo de cambio. pendiente = hay que bajar las tasas.
+function conversiones(texto, monedas) {
+    const u = convertirUnidades(texto);
+    if (u) {
+        return {filas: [{tipo: 'Conversión', titulo: `${formatear(u.cantidad)} ${u.de} = ${formatear(u.valor)} ${u.a}`,
+            subtitulo: 'Enter: copiar el resultado', icono: 'accessories-calculator-symbolic',
+            abrir: () => copiar(String(u.valor))}], pendiente: false};
+    }
+    const m = leerMoneda(texto);
+    if (!m)
+        return {filas: [], pendiente: false};
+    const r = monedas.convertir(m);
+    if (r) {
+        return {filas: [{tipo: 'Moneda', titulo: `${formatear(m.cantidad)} ${m.de} = ${formatear(r.valor)} ${m.a}`,
+            subtitulo: `1 ${m.de} = ${formatear(r.tasa)} ${m.a} · tipo de cambio del ${monedas.fecha} · Enter: copiar`,
+            icono: 'accessories-calculator-symbolic', abrir: () => copiar(String(r.valor))}], pendiente: monedas.viejas};
+    }
+    if (!monedas.tasas && monedas.error && !monedas.viejas) {
+        return {filas: [{tipo: 'Moneda', titulo: 'No pude obtener el tipo de cambio',
+            subtitulo: `${monedas.error} · Enter: buscarlo en la web`, icono: 'network-offline-symbolic',
+            abrir: buscarEnWeb(texto)}], pendiente: false};
+    }
+    return {filas: [], pendiente: monedas.viejas};
+}
+
 export function deArchivos(lista) {
     return lista.map(({url, nombre, mime}) => {
         const archivo = Gio.File.new_for_uri(url);
@@ -80,8 +116,9 @@ export function deArchivos(lista) {
     });
 }
 
-// Devuelve {antes, despues}: los archivos (que llegan después, son asíncronos) van en medio.
-export function resultados(texto, modelo) {
+// Devuelve {antes, despues, pendiente}: los archivos (que llegan después, son asíncronos) van en
+// medio. pendiente: falta el tipo de cambio; al llegar hay que volver a pedir los resultados.
+export function resultados(texto, modelo, monedas) {
     const t = texto.trim();
     if (!t)
         return {antes: [], despues: []};
@@ -104,8 +141,9 @@ export function resultados(texto, modelo) {
         antes.push({tipo: 'Cálculo', titulo: `= ${cuenta.texto}`, subtitulo: 'Enter: copiar el resultado',
             icono: 'accessories-calculator-symbolic', abrir: () => copiar(String(parseFloat(cuenta.valor.toPrecision(12))))});
     }
-    antes.push(...apps(t), ...acciones(t));
+    const {filas, pendiente} = conversiones(t, monedas);
+    antes.push(...filas, ...ordenes(t), ...apps(t), ...acciones(t));
     const web = {tipo: 'Web', titulo: `Buscar «${t}» en la web`, subtitulo: '', gicon: iconoPropio('web'),
-        abrir: () => lanzarUri(`https://www.google.com/search?q=${encodeURIComponent(t)}`)};
-    return {antes, despues: [ia, web]};
+        abrir: buscarEnWeb(t)};
+    return {antes, despues: [ia, web], pendiente};
 }
