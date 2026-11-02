@@ -1,0 +1,150 @@
+/* Buscador: caja oscura translúcida con desenfoque, al estilo de Spotlight. */
+
+.bs-fondo {
+    background-color: rgba(0, 0, 0, 0.18);
+}
+
+.bs-caja {
+    background-color: rgba(28, 26, 34, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+    padding: 6px;
+    color: #f2f0f6;
+}
+
+.bs-entrada,
+.bs-entrada:focus,
+.bs-entrada:hover {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    font-size: 21px;
+    padding: 12px 12px 12px 8px;
+    color: #f2f0f6;
+    caret-color: #f2f0f6;
+    selected-color: #ffffff;
+    selection-background-color: -st-accent-color;
+}
+
+.bs-entrada StLabel.hint-text {
+    color: rgba(242, 240, 246, 0.42);
+}
+
+.bs-lupa {
+    icon-size: 22px;
+    padding: 0 12px 0 6px;
+    color: rgba(242, 240, 246, 0.6);
+}
+
+.bs-lista {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 6px;
+    spacing: 2px;
+}
+
+.bs-fila {
+    border-radius: 10px;
+    padding: 7px 10px;
+    min-height: 44px;
+    color: #f2f0f6;
+    background-color: transparent;
+    transition-duration: 80ms;
+}
+
+.bs-fila:hover {
+    background-color: rgba(255, 255, 255, 0.07);
+}
+
+.bs-fila:selected {
+    background-color: -st-accent-color;
+    color: -st-accent-fg-color;
+}
+
+.bs-fila-caja {
+    spacing: 12px;
+}
+
+.bs-fila-icono {
+    color: inherit;
+}
+
+.bs-fila-titulo {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.bs-fila-sub {
+    font-size: 12px;
+    color: rgba(242, 240, 246, 0.62);
+}
+
+.bs-fila:selected .bs-fila-sub,
+.bs-fila:selected .bs-fila-tipo {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.bs-fila-tipo {
+    font-size: 12px;
+    color: rgba(242, 240, 246, 0.5);
+    padding-left: 8px;
+}
+
+.bs-respuesta {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 12px 12px 4px;
+    spacing: 10px;
+}
+
+.bs-resp-pregunta {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(242, 240, 246, 0.62);
+}
+
+.bs-resp-scroll {
+    max-height: 380px;
+}
+
+.bs-resp-texto {
+    font-size: 15px;
+    color: #f2f0f6;
+}
+
+.bs-resp-mono {
+    font-family: monospace;
+    font-size: 13px;
+}
+
+.bs-resp-cargando {
+    color: rgba(242, 240, 246, 0.6);
+    font-style: italic;
+}
+
+.bs-resp-pie {
+    spacing: 8px;
+    padding-top: 4px;
+}
+
+.bs-resp-estado {
+    font-size: 12px;
+    color: rgba(242, 240, 246, 0.55);
+}
+
+.bs-resp-boton {
+    border-radius: 8px;
+    padding: 6px 12px;
+    min-height: 32px;
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #f2f0f6;
+    font-size: 13px;
+}
+
+.bs-resp-boton:hover,
+.bs-resp-boton:focus {
+    background-color: rgba(255, 255, 255, 0.16);
+}
+
+.bs-resp-boton-caja {
+    spacing: 6px;
+}

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.buscador" path="/org/gnome/shell/extensions/buscador/">
+    <key name="atajo" type="as">
+      <default><![CDATA[['<Super>space']]]></default>
+      <summary>Atajo para abrir el buscador</summary>
+      <description>Combinación de teclas que abre y cierra el buscador.</description>
+    </key>
+    <key name="modelo" type="s">
+      <default>'qwen3:8b'</default>
+      <summary>Modelo de Ollama</summary>
+      <description>Nombre del modelo al que se le hacen las preguntas (como sale en «ollama list»).</description>
+    </key>
+    <key name="ollama-url" type="s">
+      <default>'http://127.0.0.1:11434'</default>
+      <summary>Dirección de Ollama</summary>
+      <description>Dónde escucha el servidor de Ollama.</description>
+    </key>
+  </schema>
+</schemalist>
