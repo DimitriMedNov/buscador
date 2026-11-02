@@ -1,5 +1,5 @@
 // Los dos modos donde el buscador se queda abierto mostrando una respuesta:
-// - "ia": conversación con Ollama. Lo que escribas después es una pregunta de seguimiento.
+// - "ia": conversación con Claude (tu suscripción) u Ollama (local), según los ajustes. Lo que escribas después es una pregunta de seguimiento.
 // - "comando": corre un comando y muestra su salida. Puedes escribir otro y Enter.
 // Escape sale del modo y regresa a la búsqueda.
 
@@ -9,13 +9,17 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as Util from 'resource:///org/gnome/shell/misc/util.js';
 
 import {argvTerminal, correr} from './comando.js';
+import {Claude} from './claude.js';
 import {Ollama} from './ollama.js';
 
 const esCancelado = e => e?.matches?.(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED);
 
 export class Modos {
     constructor(settings, respuesta, entrada, alSalir) {
+        this._settings = settings;
         this._ollama = new Ollama(settings);
+        this._claude = new Claude(settings);
+        this._cliente = null; // a quién se le está preguntando en esta conversación
         this._respuesta = respuesta;
         this._entrada = entrada;
         this._alSalir = alSalir;
@@ -23,6 +27,15 @@ export class Modos {
         this._mensajes = []; // conversación con la IA
         this._ultimo = null; // última pregunta o comando, para reintentar
         this._cancelable = null;
+    }
+
+    // El cliente se elige al empezar cada conversación, para no mezclar a media plática.
+    get _ia() {
+        return this._settings.get_string('proveedor') === 'ollama' ? this._ollama : this._claude;
+    }
+
+    get nombreIA() {
+        return this._ia.modelo;
     }
 
     get activo() {
@@ -84,11 +97,14 @@ export class Modos {
 
     async _preguntar(pregunta, cancelable) {
         this._mensajes.push({role: 'user', content: pregunta});
-        const modelo = this._ollama.modelo;
+        if (this._mensajes.length === 1)
+            this._cliente = this._ia;
+        const ia = this._cliente;
+        const modelo = ia.modelo;
         this._respuesta.cargando(pregunta, `${modelo} está pensando`,
-            'La primera pregunta tarda más: Ollama está cargando el modelo en memoria.');
+            ia === this._ollama ? 'La primera pregunta tarda más: Ollama está cargando el modelo en memoria.' : null);
         try {
-            const final = await this._ollama.preguntar(this._mensajes, t => {
+            const final = await ia.preguntar(this._mensajes, t => {
                 if (!cancelable.is_cancelled())
                     this._respuesta.texto(t, `${modelo} escribiendo…`);
             }, cancelable);
@@ -98,8 +114,10 @@ export class Modos {
         } catch (e) {
             if (esCancelado(e))
                 return;
-            const extra = e.tipo === 'apagado'
-                ? '\n\n¿Está corriendo? Inícialo con: systemctl start ollama' : '';
+            const extra = {
+                apagado: '\n\n¿Está corriendo? Inícialo con: systemctl start ollama',
+                'sin-claude': '\n\nInstálalo con: curl -fsSL https://claude.ai/install.sh | bash',
+            }[e.tipo] ?? '';
             this._respuesta.error(`${e.message}${extra}`);
         }
     }
@@ -134,5 +152,6 @@ export class Modos {
     destruir() {
         this.salir(false);
         this._ollama.destruir();
+        this._claude.destruir();
     }
 }

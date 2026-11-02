@@ -128,7 +128,7 @@ export class Panel {
     async _buscar() {
         this._cancelar();
         const texto = this._entrada.text;
-        const {antes, despues} = resultados(texto, this._settings.get_string('modelo'));
+        const {antes, despues} = resultados(texto, this._modos.nombreIA);
         this._lista.pintar([...antes, ...despues]);
 
         const t = texto.trim();

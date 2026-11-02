@@ -1,10 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
   <schema id="org.gnome.shell.extensions.buscador" path="/org/gnome/shell/extensions/buscador/">
-    <key name="atajo" type="as">
+    <key name="atajo-buscador" type="as">
       <default><![CDATA[['<Super>space']]]></default>
       <summary>Atajo para abrir el buscador</summary>
       <description>Combinación de teclas que abre y cierra el buscador.</description>
+    </key>
+    <key name="proveedor" type="s">
+      <choices><choice value='claude'/><choice value='ollama'/></choices>
+      <default>'claude'</default>
+      <summary>A quién se le pregunta</summary>
+      <description>claude: tu suscripción de Claude con internet, sin gastar RAM. ollama: un modelo local.</description>
+    </key>
+    <key name="modelo-claude" type="s">
+      <default>'haiku'</default>
+      <summary>Modelo de Claude</summary>
+      <description>haiku (rápido), sonnet u opus.</description>
+    </key>
+    <key name="ciudad" type="s">
+      <default>'Mérida, Yucatán, México'</default>
+      <summary>Tu ciudad</summary>
+      <description>Para preguntas de clima u hora sin decir la ciudad.</description>
     </key>
     <key name="modelo" type="s">
       <default>'qwen3:8b'</default>

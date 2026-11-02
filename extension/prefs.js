@@ -1,5 +1,5 @@
-// Ajustes del Buscador: qué modelo de Ollama usar y dónde está Ollama.
-// Lista los modelos que ya tienes descargados para elegir con un clic.
+// Ajustes del Buscador: a quién se le pregunta (Claude con tu suscripción u Ollama local),
+// qué modelo y tu ciudad. De Ollama lista los modelos descargados para elegir con un clic.
 
 import Adw from 'gi://Adw';
 import Gio from 'gi://Gio';
@@ -11,6 +11,28 @@ import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/ex
 
 Gio._promisify(Soup.Session.prototype, 'send_and_read_async');
 
+// Una fila de opciones ligada a un ajuste de texto: valores[i] se guarda, nombres[i] se muestra.
+function filaOpciones(ajustes, clave, titulo, subtitulo, valores, nombres) {
+    const fila = new Adw.ComboRow({title: titulo, subtitle: subtitulo, model: Gtk.StringList.new(nombres)});
+    fila.selected = Math.max(0, valores.indexOf(ajustes.get_string(clave)));
+    fila.connect('notify::selected', () => ajustes.set_string(clave, valores[fila.selected]));
+    return fila;
+}
+
+function grupoIA(ajustes) {
+    const grupo = new Adw.PreferencesGroup({title: 'Preguntas a la IA',
+        description: 'Las preguntas con «?» o la fila «Preguntar a…» van aquí.'});
+    grupo.add(filaOpciones(ajustes, 'proveedor', 'Responde', 'Claude busca en internet y no gasta tu RAM',
+        ['claude', 'ollama'], ['Claude (tu suscripción)', 'Ollama (local)']));
+    grupo.add(filaOpciones(ajustes, 'modelo-claude', 'Modelo de Claude', 'Haiku es el más rápido',
+        ['haiku', 'sonnet', 'opus'], ['Haiku', 'Sonnet', 'Opus']));
+    const ciudad = new Adw.EntryRow({title: 'Tu ciudad (para el clima)', text: ajustes.get_string('ciudad'),
+        show_apply_button: true});
+    ciudad.connect('apply', () => ajustes.set_string('ciudad', ciudad.text.trim()));
+    grupo.add(ciudad);
+    return grupo;
+}
+
 export default class BuscadorAjustes extends ExtensionPreferences {
     fillPreferencesWindow(ventana) {
         const ajustes = this.getSettings();
@@ -20,8 +42,10 @@ export default class BuscadorAjustes extends ExtensionPreferences {
         const pagina = new Adw.PreferencesPage({title: 'Buscador', icon_name: 'system-search-symbolic'});
         ventana.add(pagina);
 
+        pagina.add(grupoIA(ajustes));
+
         const grupo = new Adw.PreferencesGroup({title: 'Ollama',
-            description: 'Las preguntas con «?» o la fila «Preguntar a…» van a este modelo, en tu computadora.'});
+            description: 'Solo si eliges Ollama arriba: el modelo corre en tu computadora y usa su RAM.'});
         const modelo = new Adw.EntryRow({title: 'Modelo', text: ajustes.get_string('modelo'), show_apply_button: true});
         modelo.connect('apply', () => ajustes.set_string('modelo', modelo.text.trim()));
         const url = new Adw.EntryRow({title: 'Dirección de Ollama', text: ajustes.get_string('ollama-url'), show_apply_button: true});

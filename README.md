@@ -2,7 +2,8 @@
 
 Extensión de GNOME con un buscador al centro de la pantalla, al estilo de Spotlight de macOS.
 Pulsa **Super + Espacio** y escribe: abre apps y archivos, hace cuentas, corre comandos y le
-pregunta a un modelo de IA local con [Ollama](https://ollama.com/), sin internet y sin cuenta.
+le pregunta a Claude con tu suscripción (busca en internet y no gasta tu RAM) o, si prefieres,
+a un modelo local con [Ollama](https://ollama.com/).
 
 ![Apps](capturas/apps.png)
 
@@ -47,8 +48,18 @@ Cierra sesión y vuelve a entrar. Funciona en GNOME 48 a 51.
 ese cambio a **Alt + Shift** para dejarle Super + Espacio al buscador. `./install.sh --quitar` quita
 la extensión y regresa Super + Espacio al cambio de idioma.
 
-## IA con Ollama
-El buscador funciona sin Ollama; solo la parte de preguntas lo necesita.
+## IA con Claude (de fábrica)
+Usa el programa `claude` ([Claude Code](https://claude.com/claude-code)) con la sesión que ya
+tienes iniciada, así que no necesitas clave de API. Responde con datos actuales: busca en internet
+y consulta el clima en [Open-Meteo](https://open-meteo.com/). Solo puede buscar, abrir páginas y
+usar `curl`; ningún otro comando. Cada pregunta cuenta para los límites de tu suscripción.
+
+En los ajustes (`gnome-extensions prefs buscador@dimitrimednov.github.io`) eliges el modelo
+(Haiku, el más rápido; Sonnet u Opus) y tu ciudad para las preguntas de clima.
+
+## IA con Ollama (opcional, sin internet)
+En los ajustes cambia **Responde** a «Ollama (local)». El modelo corre en tu computadora y usa
+su RAM (qwen3:8b ocupa unos 6 GB).
 
 ```bash
 sudo pacman -S ollama-vulkan        # Arch; Vulkan aprovecha gráficas AMD/Intel integradas
@@ -68,7 +79,7 @@ Ollama no está corriendo o falta el modelo, te dice qué pasó, cómo arreglarl
 ## Cambiar el atajo
 ```bash
 gsettings --schemadir ~/.local/share/gnome-shell/extensions/buscador@dimitrimednov.github.io/schemas \
-  set org.gnome.shell.extensions.buscador atajo "['<Super>Return']"
+  set org.gnome.shell.extensions.buscador atajo-buscador "['<Super>Return']"
 ```
 
 ## Licencia

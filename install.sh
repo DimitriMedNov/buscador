@@ -45,4 +45,4 @@ gsettings set "$TECLAS" switch-input-source-backward "['<Shift>XF86Keyboard']"
 
 echo "Buscador instalado. Cierra sesión y vuelve a entrar; luego pulsa Super+Espacio."
 echo "El idioma del teclado ahora se cambia con Alt+Shift."
-command -v ollama >/dev/null || echo "Aviso: Ollama no está instalado; el buscador funciona, pero sin preguntas a la IA."
+command -v claude >/dev/null || [ -x "$HOME/.local/bin/claude" ] || echo "Aviso: no encontré Claude Code; las preguntas a la IA necesitan «claude» (o elige Ollama en los ajustes)."
