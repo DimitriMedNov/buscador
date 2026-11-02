@@ -23,6 +23,10 @@ function instrucciones(ciudad) {
         'luego el detalle si hace falta. Texto plano: sin markdown, sin tablas, sin encabezados. ' +
         'Si das un comando, ponlo solo en su propia línea. ' +
         'Si la respuesta depende de datos actuales (noticias, precios, resultados, horarios), búscalos con WebSearch; no inventes. ' +
+        'Si te piden abrir una app o una página, hazlo tú, no le des el comando: para una app (con o sin enlace) usa ' +
+        "gtk-launch <id-del-.desktop> [url], por ejemplo gtk-launch brave-browser https://www.youtube.com; " +
+        'si no sabes el id, búscalo con ls /usr/share/applications ~/.local/share/applications. ' +
+        'Para abrir un enlace o archivo con la app predeterminada usa gio open <url-o-ruta>. Luego confirma en una línea. ' +
         'Para el clima usa curl -s con Open-Meteo: primero las coordenadas con ' +
         "'https://geocoding-api.open-meteo.com/v1/search?name=<ciudad>&count=1&language=es' y luego " +
         "'https://api.open-meteo.com/v1/forecast?latitude=<lat>&longitude=<lon>&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto'.";
@@ -72,7 +76,7 @@ export class Claude {
             '--model', this._settings.get_string('modelo-claude'),
             '--output-format', 'stream-json', '--verbose', '--include-partial-messages',
             '--tools', 'WebSearch,WebFetch,Bash',
-            '--allowedTools', 'WebSearch', 'WebFetch', 'Bash(curl:*)',
+            '--allowedTools', 'WebSearch', 'WebFetch', 'Bash(curl:*)', 'Bash(gtk-launch:*)', 'Bash(gio open:*)', 'Bash(ls:*)',
             '--strict-mcp-config', '--setting-sources', '',
             '--system-prompt', instrucciones(this._settings.get_string('ciudad'))];
         if (this._sesion)
@@ -122,7 +126,7 @@ export class Claude {
                     texto += ev.delta.text;
                     alTrozo(texto.replace(/^\s+/, ''));
                 } else if (ev?.type === 'content_block_start' && ev.content_block?.type === 'tool_use') {
-                    alTrozo(ev.content_block.name === 'Bash' ? 'Consultando…' : 'Buscando en internet…');
+                    alTrozo(ev.content_block.name === 'Bash' ? 'Trabajando…' : 'Buscando en internet…');
                 } else if (dato.type === 'result') {
                     if (dato.is_error)
                         fallo = dato.result || dato.subtype;
